@@ -31,6 +31,9 @@ rebel.xml
 ### node ###
 ruoyi-ui/node_modules/*
 
+### config###
+ruoyi-admin/src/main/resources/application-dev.yml
+ruoyi-admin/src/main/resources/application-prd.yml
 ### NetBeans ###
 nbproject/private/
 build/*
