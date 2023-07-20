@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.ErpBomMapper">
+
+    <resultMap type="ErpBom" id="ErpBomResult">
+        <result property="id"    column="id"    />
+        <result property="productModelId"    column="product_model_id"    />
+        <result property="productModelCoder"    column="product_model_coder"    />
+        <result property="originalId"    column="original_id"    />
+        <result property="originalCoder"    column="original_coder"    />
+        <result property="number"    column="number"    />
+        <result property="isDelete"    column="is_delete"    />
+        <result property="addTime"    column="add_time"    />
+        <result property="addBy"    column="add_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="updateBy"    column="update_by"    />
+    </resultMap>
+
+    <sql id="selectErpBomVo">
+        select id, product_model_id, product_model_coder, original_id, original_coder, number, is_delete, add_time, add_by, update_time, update_by from erp_bom
+    </sql>
+
+    <select id="selectErpBomList" parameterType="ErpBom" resultMap="ErpBomResult">
+        <include refid="selectErpBomVo"/>
+        <where>
+            <if test="productModelId != null "> and product_model_id = #{productModelId}</if>
+            <if test="productModelCoder != null  and productModelCoder != ''"> and product_model_coder = #{productModelCoder}</if>
+            <if test="originalId != null "> and original_id = #{originalId}</if>
+            <if test="originalCoder != null  and originalCoder != ''"> and original_coder = #{originalCoder}</if>
+            <if test="number != null "> and number = #{number}</if>
+            <if test="isDelete != null "> and is_delete = #{isDelete}</if>
+            <if test="addTime != null "> and add_time = #{addTime}</if>
+            <if test="addBy != null "> and add_by = #{addBy}</if>
+        </where>
+    </select>
+
+    <select id="selectErpBomById" parameterType="Long" resultMap="ErpBomResult">
+        <include refid="selectErpBomVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertErpBom" parameterType="ErpBom" useGeneratedKeys="true" keyProperty="id">
+        insert into erp_bom
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="productModelId != null">product_model_id,</if>
+            <if test="productModelCoder != null">product_model_coder,</if>
+            <if test="originalId != null">original_id,</if>
+            <if test="originalCoder != null">original_coder,</if>
+            <if test="number != null">number,</if>
+            <if test="isDelete != null">is_delete,</if>
+            <if test="addTime != null">add_time,</if>
+            <if test="addBy != null">add_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="updateBy != null">update_by,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="productModelId != null">#{productModelId},</if>
+            <if test="productModelCoder != null">#{productModelCoder},</if>
+            <if test="originalId != null">#{originalId},</if>
+            <if test="originalCoder != null">#{originalCoder},</if>
+            <if test="number != null">#{number},</if>
+            <if test="isDelete != null">#{isDelete},</if>
+            <if test="addTime != null">#{addTime},</if>
+            <if test="addBy != null">#{addBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+        </trim>
+    </insert>
+
+    <update id="updateErpBom" parameterType="ErpBom">
+        update erp_bom
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="productModelId != null">product_model_id = #{productModelId},</if>
+            <if test="productModelCoder != null">product_model_coder = #{productModelCoder},</if>
+            <if test="originalId != null">original_id = #{originalId},</if>
+            <if test="originalCoder != null">original_coder = #{originalCoder},</if>
+            <if test="number != null">number = #{number},</if>
+            <if test="isDelete != null">is_delete = #{isDelete},</if>
+            <if test="addTime != null">add_time = #{addTime},</if>
+            <if test="addBy != null">add_by = #{addBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteErpBomById" parameterType="Long">
+        delete from erp_bom where id = #{id}
+    </delete>
+
+    <delete id="deleteErpBomByIds" parameterType="String">
+        delete from erp_bom where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

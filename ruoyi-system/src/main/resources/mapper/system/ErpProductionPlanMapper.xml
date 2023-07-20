@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.ErpProductionPlanMapper">
+
+    <resultMap type="ErpProductionPlan" id="ErpProductionPlanResult">
+        <result property="id"    column="id"    />
+        <result property="productLineId"    column="product_line_id"    />
+        <result property="productModelId"    column="product_model_id"    />
+        <result property="count"    column="count"    />
+        <result property="date"    column="date"    />
+        <result property="status"    column="status"    />
+        <result property="isDelete"    column="is_delete"    />
+        <result property="addTime"    column="add_time"    />
+        <result property="addBy"    column="add_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="updateBy"    column="update_by"    />
+    </resultMap>
+
+    <sql id="selectErpProductionPlanVo">
+        select id, product_line_id, product_model_id, count, date, status, is_delete, add_time, add_by, update_time, update_by from erp_production_plan
+    </sql>
+
+    <select id="selectErpProductionPlanList" parameterType="ErpProductionPlan" resultMap="ErpProductionPlanResult">
+        <include refid="selectErpProductionPlanVo"/>
+        <where>
+            <if test="productLineId != null "> and product_line_id = #{productLineId}</if>
+            <if test="productModelId != null "> and product_model_id = #{productModelId}</if>
+            <if test="count != null "> and count = #{count}</if>
+            <if test="date != null "> and date = #{date}</if>
+            <if test="status != null "> and status = #{status}</if>
+            <if test="isDelete != null "> and is_delete = #{isDelete}</if>
+            <if test="addTime != null "> and add_time = #{addTime}</if>
+            <if test="addBy != null "> and add_by = #{addBy}</if>
+        </where>
+    </select>
+
+    <select id="selectErpProductionPlanById" parameterType="Long" resultMap="ErpProductionPlanResult">
+        <include refid="selectErpProductionPlanVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertErpProductionPlan" parameterType="ErpProductionPlan" useGeneratedKeys="true" keyProperty="id">
+        insert into erp_production_plan
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="productLineId != null">product_line_id,</if>
+            <if test="productModelId != null">product_model_id,</if>
+            <if test="count != null">count,</if>
+            <if test="date != null">date,</if>
+            <if test="status != null">status,</if>
+            <if test="isDelete != null">is_delete,</if>
+            <if test="addTime != null">add_time,</if>
+            <if test="addBy != null">add_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="updateBy != null">update_by,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="productLineId != null">#{productLineId},</if>
+            <if test="productModelId != null">#{productModelId},</if>
+            <if test="count != null">#{count},</if>
+            <if test="date != null">#{date},</if>
+            <if test="status != null">#{status},</if>
+            <if test="isDelete != null">#{isDelete},</if>
+            <if test="addTime != null">#{addTime},</if>
+            <if test="addBy != null">#{addBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+        </trim>
+    </insert>
+
+    <update id="updateErpProductionPlan" parameterType="ErpProductionPlan">
+        update erp_production_plan
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="productLineId != null">product_line_id = #{productLineId},</if>
+            <if test="productModelId != null">product_model_id = #{productModelId},</if>
+            <if test="count != null">count = #{count},</if>
+            <if test="date != null">date = #{date},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="isDelete != null">is_delete = #{isDelete},</if>
+            <if test="addTime != null">add_time = #{addTime},</if>
+            <if test="addBy != null">add_by = #{addBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteErpProductionPlanById" parameterType="Long">
+        delete from erp_production_plan where id = #{id}
+    </delete>
+
+    <delete id="deleteErpProductionPlanByIds" parameterType="String">
+        delete from erp_production_plan where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

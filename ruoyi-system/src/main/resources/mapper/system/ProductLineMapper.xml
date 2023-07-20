@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.ProductLineMapper">
+
+    <resultMap type="ProductLineDTO" id="ProductLineResult">
+        <result property="id"    column="id"    />
+        <result property="name"    column="name"    />
+        <result property="isDelete"    column="is_delete"    />
+        <result property="addTime"    column="add_time"    />
+        <result property="addBy"    column="add_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="updateBy"    column="update_by"    />
+    </resultMap>
+
+    <sql id="selectProductLineVo">
+        select id, name, is_delete, add_time, add_by, update_time, update_by from erp_product_line
+    </sql>
+
+    <select id="selectProductLineList" parameterType="ProductLineDTO" resultMap="ProductLineResult">
+        <include refid="selectProductLineVo"/>
+        <where>
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="isDelete != null "> and is_delete = #{isDelete}</if>
+            <if test="addTime != null "> and add_time = #{addTime}</if>
+            <if test="addBy != null "> and add_by = #{addBy}</if>
+        </where>
+    </select>
+
+    <select id="selectProductLineById" parameterType="Long" resultMap="ProductLineResult">
+        <include refid="selectProductLineVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertProductLine" parameterType="ProductLineDTO" useGeneratedKeys="true" keyProperty="id">
+        insert into erp_product_line
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="name != null and name != ''">name,</if>
+            <if test="isDelete != null">is_delete,</if>
+            <if test="addTime != null">add_time,</if>
+            <if test="addBy != null">add_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="updateBy != null">update_by,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="name != null and name != ''">#{name},</if>
+            <if test="isDelete != null">#{isDelete},</if>
+            <if test="addTime != null">#{addTime},</if>
+            <if test="addBy != null">#{addBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+        </trim>
+    </insert>
+
+    <update id="updateProductLine" parameterType="ProductLineDTO">
+        update erp_product_line
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="isDelete != null">is_delete = #{isDelete},</if>
+            <if test="addTime != null">add_time = #{addTime},</if>
+            <if test="addBy != null">add_by = #{addBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteProductLineById" parameterType="Long">
+        delete from erp_product_line where id = #{id}
+    </delete>
+
+    <delete id="deleteProductLineByIds" parameterType="String">
+        delete from erp_product_line where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
