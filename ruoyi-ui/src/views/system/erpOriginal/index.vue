@@ -44,7 +44,7 @@
       <el-form-item label="是否特殊" prop="special">
         <el-input
           v-model="queryParams.special"
-          placeholder="请输入是否特殊"
+          placeholder="输入0或1, 0是非特殊 1是特殊"
           clearable
           @keyup.enter.native="handleQuery"
         />
@@ -176,15 +176,25 @@
           v-hasPermi="['system:data:remove']"
         >删除</el-button>
       </el-col>
+<!--      <el-col :span="1.5">-->
+<!--        <el-button-->
+<!--          type="warning"-->
+<!--          plain-->
+<!--          icon="el-icon-download"-->
+<!--          size="mini"-->
+<!--          @click="handleExport"-->
+<!--          v-hasPermi="['system:data:export']"-->
+<!--        >导出</el-button>-->
+<!--      </el-col>-->
       <el-col :span="1.5">
         <el-button
           type="warning"
           plain
-          icon="el-icon-download"
+          icon="el-icon-upload"
           size="mini"
-          @click="handleExport"
+          @click="handleImportAdd"
           v-hasPermi="['system:data:export']"
-        >导出</el-button>
+        >导入</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
@@ -217,8 +227,8 @@
           <span>{{ parseTime(scope.row.addTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="创建人" align="center" prop="addBy" />
-      <el-table-column label="修改人" align="center" prop="updateBu" />
+<!--      <el-table-column label="创建人" align="center" prop="addBy" />-->
+<!--      <el-table-column label="修改人" align="center" prop="updateBu" />-->
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -246,7 +256,33 @@
       :limit.sync="queryParams.pageSize"
       @pagination="getList"
     />
-
+    <!--    导入弹窗-->
+    <el-dialog :title="importTitle" :visible.sync="importOpen" width="500px" append-to-body>
+      <el-form ref="importForm" :model="importForm" :rules="rules" label-width="80px">
+        <el-form-item label="文件" prop="file">
+          <el-upload
+            ref="upload"
+            :limit="1"
+            accept=".xlsx, .xls"
+            :headers="upload.headers"
+            :action="upload.url + '?updateSupport=' + upload.updateSupport"
+            :disabled="upload.isUploading"
+            :on-progress="handleFileUploadProgress"
+            :on-success="handleFileSuccess"
+            :auto-upload="false"
+            drag
+          >
+            <el-button type="primary" size="small">
+              上传
+            </el-button>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="importSubmitForm">确 定</el-button>
+        <el-button @click="importCancel">取 消</el-button>
+      </div>
+    </el-dialog>
     <!-- 添加或修改原材料信息对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
@@ -270,8 +306,8 @@
         </el-form-item>
         <el-form-item label="是否特殊" prop="special">
           <el-radio-group v-model="form.special">
-            <el-radio :label="1" v-model="radio" :key="form.special" :value="1">是</el-radio>
-            <el-radio :label="0" v-model="radio" :key="form.special" :value="0">不是</el-radio>
+            <el-radio :label="1" :key="form.special" :value="1">是</el-radio>
+            <el-radio :label="0" :key="form.special" :value="0">不是</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="物流运输天数" prop="transport">
@@ -322,11 +358,15 @@
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
+
+
   </div>
 </template>
 
 <script>
 import { listData, getData, delData, addData, updateData } from "@/api/system/erpOriginalData";
+import {getToken} from "@/utils/auth";
+
 
 export default {
   name: "Data",
@@ -348,8 +388,11 @@ export default {
       dataList: [],
       // 弹出层标题
       title: "",
+      importTitle:"",
       // 是否显示弹出层
       open: false,
+      // 导入弹窗
+      importOpen: false,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -373,10 +416,30 @@ export default {
         updateBu: null
       },
       // 表单参数
-      form: {},
+      form: {
+        special:null
+      },
+      importForm:{
+        fileList:[]
+      },
+      fileList:[],
       // 表单校验
       rules: {
-      }
+      },
+      upload: {
+        // 是否显示弹出层（用户导入）
+        open: false,
+        // 弹出层标题（用户导入）
+        title: "",
+        // 是否禁用上传
+        isUploading: false,
+        // 是否更新已经存在的用户数据
+        updateSupport: 0,
+        // 设置上传的请求头部
+        headers: { Authorization: "Bearer " + getToken() },
+        // 上传的地址
+        url: process.env.VUE_APP_BASE_API + "/excel/importStock"
+      },
     };
   },
   created() {
@@ -396,6 +459,10 @@ export default {
     cancel() {
       this.open = false;
       this.reset();
+    },
+    importCancel(){
+      this.importOpen = false;
+      // this.importReset();
     },
     // 表单重置
     reset() {
@@ -423,6 +490,13 @@ export default {
       };
       this.resetForm("form");
     },
+    importReset(){
+      this.importForm = {
+        fileList: []
+      }
+      this.fileList = [];
+      this.resetForm("importForm");
+    },
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.pageNum = 1;
@@ -444,6 +518,12 @@ export default {
       this.reset();
       this.open = true;
       this.title = "添加原材料信息";
+    },
+    /** 新增按钮操作 */
+    handleImportAdd() {
+      this.importReset();
+      this.importOpen = true;
+      this.importTitle = "上传excel";
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
@@ -475,6 +555,10 @@ export default {
         }
       });
     },
+    /** 上传 */
+    importSubmitForm() {
+      this.$refs.upload.submit();
+    },
     /** 删除按钮操作 */
     handleDelete(row) {
       const ids = row.id || this.ids;
@@ -490,6 +574,22 @@ export default {
       this.download('system/data/export', {
         ...this.queryParams
       }, `data_${new Date().getTime()}.xlsx`)
+    },
+    // 文件上传中处理
+    handleFileUploadProgress(event, file, fileList) {
+      this.upload.isUploading = true;
+    },
+    // 文件上传成功处理
+    handleFileSuccess(response, file, fileList) {
+      this.upload.open = false;
+      this.upload.isUploading = false;
+      this.$refs.upload.clearFiles();
+      this.$alert("<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 20px 0;'>" + response.message + "</div>", "导入结果", { dangerouslyUseHTMLString: true });
+      this.getList();
+    },
+    //  文件列表移除文件时的钩子
+    handleRemove(file, fileList) {
+      this.$message.warning("文件已移除");
     }
   }
 };

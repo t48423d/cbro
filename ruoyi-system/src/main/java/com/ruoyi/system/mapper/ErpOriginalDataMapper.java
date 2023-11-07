@@ -58,4 +58,10 @@ public interface ErpOriginalDataMapper
      * @return 结果
      */
     public int deleteErpOriginalDataByIds(Long[] ids);
+
+    public int  batchInsert(List<ErpOriginalData> list);
+
+    void updateItem(ErpOriginalData data);
+
+    void updateBatch(List<ErpOriginalData> list);
 }

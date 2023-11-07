@@ -11,7 +11,9 @@
         <result property="originalId"    column="original_id"    />
         <result property="originalCoder"    column="original_coder"    />
         <result property="number"    column="number"    />
+        <result property="version"    column="version"    />
         <result property="isDelete"    column="is_delete"    />
+        <result property="isDefault"    column="is_default"    />
         <result property="addTime"    column="add_time"    />
         <result property="addBy"    column="add_by"    />
         <result property="updateTime"    column="update_time"    />
@@ -19,7 +21,7 @@
     </resultMap>
 
     <sql id="selectErpBomVo">
-        select id, product_model_id, product_model_coder, original_id, original_coder, number, is_delete, add_time, add_by, update_time, update_by from erp_bom
+        select id, product_model_id, product_model_coder, original_id, original_coder, number,version, is_default, is_delete, add_time, add_by, update_time, update_by from erp_bom
     </sql>
 
     <select id="selectErpBomList" parameterType="ErpBom" resultMap="ErpBomResult">
@@ -30,7 +32,9 @@
             <if test="originalId != null "> and original_id = #{originalId}</if>
             <if test="originalCoder != null  and originalCoder != ''"> and original_coder = #{originalCoder}</if>
             <if test="number != null "> and number = #{number}</if>
-            <if test="isDelete != null "> and is_delete = #{isDelete}</if>
+            <if test="version != null "> and version = #{version}</if>
+            <if test="1 == 1 "> and is_delete = #{isDelete}</if>
+            <if test="isDefault != null "> and is_default = #{isDefault}</if>
             <if test="addTime != null "> and add_time = #{addTime}</if>
             <if test="addBy != null "> and add_by = #{addBy}</if>
         </where>
@@ -49,7 +53,9 @@
             <if test="originalId != null">original_id,</if>
             <if test="originalCoder != null">original_coder,</if>
             <if test="number != null">number,</if>
+            <if test="version != null">version,</if>
             <if test="isDelete != null">is_delete,</if>
+            <if test="isDefault != null">is_default,</if>
             <if test="addTime != null">add_time,</if>
             <if test="addBy != null">add_by,</if>
             <if test="updateTime != null">update_time,</if>
@@ -61,7 +67,9 @@
             <if test="originalId != null">#{originalId},</if>
             <if test="originalCoder != null">#{originalCoder},</if>
             <if test="number != null">#{number},</if>
+            <if test="version != null">#{version},</if>
             <if test="isDelete != null">#{isDelete},</if>
+            <if test="isDefault != null">#{isDefault},</if>
             <if test="addTime != null">#{addTime},</if>
             <if test="addBy != null">#{addBy},</if>
             <if test="updateTime != null">#{updateTime},</if>
@@ -77,7 +85,9 @@
             <if test="originalId != null">original_id = #{originalId},</if>
             <if test="originalCoder != null">original_coder = #{originalCoder},</if>
             <if test="number != null">number = #{number},</if>
+            <if test="version != null">version = #{version},</if>
             <if test="isDelete != null">is_delete = #{isDelete},</if>
+            <if test="isDefault != null">is_default = #{isDefault},</if>
             <if test="addTime != null">add_time = #{addTime},</if>
             <if test="addBy != null">add_by = #{addBy},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
@@ -85,6 +95,16 @@
         </trim>
         where id = #{id}
     </update>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into erp_bom (product_model_id, product_model_coder, original_id, original_coder,
+        number, is_delete, add_time, add_by, update_time, update_by, is_default, version)
+        values
+        <foreach collection="list" item="item" separator="," >
+            (#{item.productModelId}, #{item.productModelCoder}, #{item.originalId},#{item.originalCoder},
+             #{item.number}, 0, now(), #{item.addBy}, now(),#{item.updateBy}, #{item.isDefault}, #{item.version})
+        </foreach>
+    </insert>
 
     <delete id="deleteErpBomById" parameterType="Long">
         delete from erp_bom where id = #{id}
@@ -96,4 +116,53 @@
             #{id}
         </foreach>
     </delete>
+
+
+    <update id="updateBatch" parameterType="ErpBom">
+        <foreach collection="list" item="item" separator=";">
+            update
+            `erp_bom`
+            set
+            `number` = #{item.number}
+            where
+            `original_coder` = #{item.originalCoder} and
+            `product_model_coder` = #{item.productModelCoder}
+        </foreach>
+    </update>
+
+    <select id="getListInModelCodes" resultMap="ErpBomResult">
+        select * from `erp_bom`
+        where `product_model_coder` in
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+              #{item}
+        </foreach>
+    </select>
+
+    <update id="updateItems" parameterType="ErpBom">
+        update
+        `erp_bom`
+        set
+        `number` = #{number}
+        where
+        `original_coder` = #{originalCoder} and
+        `product_model_coder` = #{productModelCoder}
+    </update>
+
+
+    <update id="changeDelBatch" parameterType="ErpBom">
+        <foreach collection="list" item="item" separator=";">
+            UPDATE `erp_bom` SET  `is_delete` = 1 , update_time = #{item.updateTime}
+            where
+            `original_coder` = #{item.originalCoder} and
+            `product_model_coder` = #{item.productModelCoder}
+        </foreach>
+    </update>
+
+    <update id="deleteItem" parameterType="ErpBom">
+        UPDATE `erp_bom` SET  `is_delete` = 1 , update_time = #{updateTime}
+        where
+        `original_coder` = #{originalCoder} and
+        `product_model_coder` = #{productModelCoder}
+    </update>
+
 </mapper>

@@ -36,7 +36,18 @@
         <include refid="selectErpProductModelVo"/>
         where id = #{id}
     </select>
+    <select id="getModelCoders" resultType="String">
+        select coder from erp_product_model where is_delete = 0
+    </select>
 
+    <insert id="batchInsert" parameterType="ErpProductModel">
+        insert into erp_product_model (coder, product_line_id, name, is_delete, add_time, add_by, update_time, update_by)
+        values
+        <foreach collection="list" item="item" separator="," >
+            (#{item.coder}, #{item.productLineId}, #{item.name}, #{item.isDelete},
+             #{item.addTime}, #{item.addBy}, #{item.updateTime}, #{item.updateBy} )
+        </foreach>
+    </insert>
     <insert id="insertErpProductModel" parameterType="ErpProductModel" useGeneratedKeys="true" keyProperty="id">
         insert into erp_product_model
         <trim prefix="(" suffix=")" suffixOverrides=",">

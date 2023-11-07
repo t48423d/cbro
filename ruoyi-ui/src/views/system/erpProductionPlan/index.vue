@@ -1,31 +1,51 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="model编号" prop="coder">
-        <el-input
-          v-model="queryParams.coder"
-          placeholder="请输入model编号"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-<!--      <el-form-item label="生产线id" prop="productLineId">-->
+<!--      <el-form-item label="产品线" prop="productLineCode">-->
 <!--        <el-input-->
-<!--          v-model="queryParams.productLineId"-->
-<!--          placeholder="请输入生产线id"-->
+<!--          v-model="queryParams.productLineCode"-->
+<!--          placeholder="请输入产品线"-->
 <!--          clearable-->
 <!--          @keyup.enter.native="handleQuery"-->
 <!--        />-->
 <!--      </el-form-item>-->
-      <el-form-item label="型号名称" prop="name">
+      <el-form-item label="产品型号" prop="productModelCode">
         <el-input
-          v-model="queryParams.name"
-          placeholder="请输入型号名称"
+          v-model="queryParams.productModelCode"
+          placeholder="请输入产品型号code"
           clearable
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-<!--      <el-form-item label="是否显示" prop="isDelete">-->
+      <el-form-item label="个数" prop="count">
+        <el-input
+          v-model="queryParams.count"
+          placeholder="请输入个数"
+          clearable
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item label="出产日期" prop="date">
+        <el-date-picker clearable
+                        v-model="queryParams.date"
+                        type="date"
+                        value-format="yyyy-MM-dd"
+                        placeholder="请选择出产日期">
+        </el-date-picker>
+      </el-form-item>
+
+      <el-form-item label="出产日期">
+        <el-date-picker
+          v-model="dateRange"
+          style="width: 240px"
+          value-format="yyyy-MM-dd"
+          type="daterange"
+          range-separator="-"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+        ></el-date-picker>
+      </el-form-item>
+<!--      <el-form-item label="0 非删除 1删除" prop="isDelete">-->
 <!--        <el-input-->
 <!--          v-model="queryParams.isDelete"-->
 <!--          placeholder="请输入0 非删除 1删除"-->
@@ -33,22 +53,22 @@
 <!--          @keyup.enter.native="handleQuery"-->
 <!--        />-->
 <!--      </el-form-item>-->
-<!--      <el-form-item label="创建时间" prop="addTime">-->
-<!--        <el-date-picker clearable-->
-<!--                        v-model="queryParams.addTime"-->
-<!--                        type="date"-->
-<!--                        value-format="yyyy-MM-dd"-->
-<!--                        placeholder="请选择创建时间">-->
-<!--        </el-date-picker>-->
-<!--      </el-form-item>-->
-<!--      <el-form-item label="创建人id" prop="addBy">-->
-<!--        <el-input-->
-<!--          v-model="queryParams.addBy"-->
-<!--          placeholder="请输入创建人id"-->
-<!--          clearable-->
-<!--          @keyup.enter.native="handleQuery"-->
-<!--        />-->
-<!--      </el-form-item>-->
+      <el-form-item label="创建时间" prop="addTime">
+        <el-date-picker clearable
+                        v-model="queryParams.addTime"
+                        type="date"
+                        value-format="yyyy-MM-dd"
+                        placeholder="请选择创建时间">
+        </el-date-picker>
+      </el-form-item>
+      <el-form-item label="创建人" prop="addBy">
+        <el-input
+          v-model="queryParams.addBy"
+          placeholder="请输入创建人"
+          clearable
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -63,7 +83,7 @@
           icon="el-icon-plus"
           size="mini"
           @click="handleAdd"
-          v-hasPermi="['system:model:add']"
+          v-hasPermi="['system:plan:add']"
         >新增</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -74,7 +94,7 @@
           size="mini"
           :disabled="single"
           @click="handleUpdate"
-          v-hasPermi="['system:model:edit']"
+          v-hasPermi="['system:plan:edit']"
         >修改</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -85,18 +105,8 @@
           size="mini"
           :disabled="multiple"
           @click="handleDelete"
-          v-hasPermi="['system:model:remove']"
+          v-hasPermi="['system:plan:remove']"
         >删除</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="warning"
-          plain
-          icon="el-icon-download"
-          size="mini"
-          @click="handleExport"
-          v-hasPermi="['system:model:export']"
-        >导出</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -108,45 +118,56 @@
           v-hasPermi="['system:data:export']"
         >导入</el-button>
       </el-col>
+      <el-col :span="1.5">
+        <el-button
+          type="warning"
+          plain
+          icon="el-icon-download"
+          size="mini"
+          @click="handleExportShow"
+          v-hasPermi="['system:plan:export']"
+        >导出</el-button>
+      </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="modelList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" :data="planList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="序号" align="center" prop="id" />
-      <el-table-column label="model编号" align="center" prop="coder" />
-<!--      <el-table-column label="生产线id" align="center" prop="productLineId" />-->
-      <el-table-column label="型号名称" align="center" prop="name" />
+<!--      <el-table-column label="产品线" align="center" prop="productLineCode" />-->
+      <el-table-column label="产品型号code" align="center" prop="productModelCode" />
+      <el-table-column label="个数" align="center" prop="count" />
+      <el-table-column label="出产日期" align="center" prop="date" width="180">
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.date, '{y}-{m}-{d}') }}</span>
+        </template>
+      </el-table-column>
+<!--      <el-table-column label="状态 1待生产 2已完成 3延期" align="center" prop="status" />-->
 <!--      <el-table-column label="0 非删除 1删除" align="center" prop="isDelete" />-->
       <el-table-column label="创建时间" align="center" prop="addTime" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.addTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-<!--      <el-table-column label="创建人id" align="center" prop="addBy" />-->
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['system:model:edit']"
-          >修改</el-button>
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-            v-hasPermi="['system:model:remove']"
-          >删除</el-button>
-          <el-button
-            size="mini"
-            type="text"
-            @click="handleSetting(scope.row)"
-          >显示原材料bom</el-button>
-        </template>
-      </el-table-column>
+<!--      <el-table-column label="创建人" align="center" prop="addBy" />-->
+<!--      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">-->
+<!--        <template slot-scope="scope">-->
+<!--          <el-button-->
+<!--            size="mini"-->
+<!--            type="text"-->
+<!--            icon="el-icon-edit"-->
+<!--            @click="handleUpdate(scope.row)"-->
+<!--            v-hasPermi="['system:plan:edit']"-->
+<!--          >修改</el-button>-->
+<!--          <el-button-->
+<!--            size="mini"-->
+<!--            type="text"-->
+<!--            icon="el-icon-delete"-->
+<!--            @click="handleDelete(scope.row)"-->
+<!--            v-hasPermi="['system:plan:remove']"-->
+<!--          >删除</el-button>-->
+<!--        </template>-->
+<!--      </el-table-column>-->
     </el-table>
 
     <pagination
@@ -183,17 +204,31 @@
         <el-button @click="importCancel">取 消</el-button>
       </div>
     </el-dialog>
-    <!-- 添加或修改产品型号对话框 -->
+    <el-dialog title="导出" :visible.sync="exportShow" width="500px" append-to-body>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="handleExport">确 定</el-button>
+        <el-button @click="handleExportShow">取 消</el-button>
+      </div>
+    </el-dialog>
+    <!-- 添加或修改生产计划对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="model编号" prop="coder">
-          <el-input v-model="form.coder" placeholder="请输入model编号" />
+        <el-form-item label="产品线" prop="productLineCode">
+          <el-input v-model="form.productLineCode" placeholder="请输入产品线" />
         </el-form-item>
-        <el-form-item label="生产线id" prop="productLineId">
-          <el-input v-model="form.productLineId" placeholder="请输入生产线id" />
+        <el-form-item label="产品型号code" prop="productModelCode">
+          <el-input v-model="form.productModelCode" placeholder="请输入产品型号code" />
         </el-form-item>
-        <el-form-item label="型号名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入型号名称" />
+        <el-form-item label="个数" prop="count">
+          <el-input v-model="form.count" placeholder="请输入个数" />
+        </el-form-item>
+        <el-form-item label="出产日期" prop="date">
+          <el-date-picker clearable
+                          v-model="form.date"
+                          type="date"
+                          value-format="yyyy-MM-dd"
+                          placeholder="请选择出产日期">
+          </el-date-picker>
         </el-form-item>
         <el-form-item label="0 非删除 1删除" prop="isDelete">
           <el-input v-model="form.isDelete" placeholder="请输入0 非删除 1删除" />
@@ -206,8 +241,8 @@
                           placeholder="请选择创建时间">
           </el-date-picker>
         </el-form-item>
-        <el-form-item label="创建人id" prop="addBy">
-          <el-input v-model="form.addBy" placeholder="请输入创建人id" />
+        <el-form-item label="创建人" prop="addBy">
+          <el-input v-model="form.addBy" placeholder="请输入创建人" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -219,11 +254,11 @@
 </template>
 
 <script>
-import { listModel, getModel, delModel, addModel, updateModel } from "@/api/system/erpProductModel";
+import { listPlan, getPlan, delPlan, addPlan, updatePlan } from "@/api/system/erpProductionPlan";
 import {getToken} from "@/utils/auth";
 
 export default {
-  name: "Model",
+  name: "Plan",
   data() {
     return {
       importForm: {},
@@ -239,26 +274,32 @@ export default {
       showSearch: true,
       // 总条数
       total: 0,
-      // 产品型号表格数据
-      modelList: [],
+      // 生产计划表格数据
+      planList: [],
       // 弹出层标题
       title: "",
       importTitle:"",
       // 是否显示弹出层
       open: false,
-      // 导入弹窗
       importOpen: false,
+      exportShow: false,
       // 查询参数
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        coder: null,
-        productLineId: null,
-        name: null,
+        productLineCode: null,
+        productModelCode: null,
+        count: null,
+        date: null,
+        status: null,
         isDelete: null,
         addTime: null,
         addBy: null,
+        day: null,
+        startTime: null,
+        endTime: null,
       },
+      dateRange: [],
       // 表单参数
       form: {},
       // 表单校验
@@ -276,7 +317,7 @@ export default {
         // 设置上传的请求头部
         headers: { Authorization: "Bearer " + getToken() },
         // 上传的地址
-        url: process.env.VUE_APP_BASE_API + "/excel/importBom"
+        url: process.env.VUE_APP_BASE_API + "/excel/importSchedule"
       },
     };
   },
@@ -284,11 +325,14 @@ export default {
     this.getList();
   },
   methods: {
-    /** 查询产品型号列表 */
+    /** 查询生产计划列表 */
     getList() {
       this.loading = true;
-      listModel(this.queryParams).then(response => {
-        this.modelList = response.rows;
+      //var dateRange = Array.isArray(this.dateRange) ? dateRange : [];
+      // this.queryParams.startTime = this.dateRange[0];
+      // this.queryParams.endTime = this.dateRange[1];
+      listPlan( this.addDateRange(this.queryParams, this.dateRange) ).then(response => {
+        this.planList = response.rows;
         this.total = response.total;
         this.loading = false;
       });
@@ -298,13 +342,19 @@ export default {
       this.open = false;
       this.reset();
     },
+    importCancel(){
+      this.importOpen = false;
+      // this.importReset();
+    },
     // 表单重置
     reset() {
       this.form = {
         id: null,
-        coder: null,
-        productLineId: null,
-        name: null,
+        productLineCode: null,
+        productModelCode: null,
+        count: null,
+        date: null,
+        status: null,
         isDelete: null,
         addTime: null,
         addBy: null,
@@ -312,6 +362,13 @@ export default {
         updateBy: null
       };
       this.resetForm("form");
+    },
+    importReset(){
+      this.importForm = {
+        fileList: []
+      }
+      this.fileList = [];
+      this.resetForm("importForm");
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -333,7 +390,7 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
-      this.title = "添加产品型号";
+      this.title = "添加生产计划";
     },
     /** 新增按钮操作 */
     handleImportAdd() {
@@ -345,10 +402,10 @@ export default {
     handleUpdate(row) {
       this.reset();
       const id = row.id || this.ids
-      getModel(id).then(response => {
+      getPlan(id).then(response => {
         this.form = response.data;
         this.open = true;
-        this.title = "修改产品型号";
+        this.title = "修改生产计划";
       });
     },
     /** 提交按钮 */
@@ -356,13 +413,13 @@ export default {
       this.$refs["form"].validate(valid => {
         if (valid) {
           if (this.form.id != null) {
-            updateModel(this.form).then(response => {
+            updatePlan(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
             });
           } else {
-            addModel(this.form).then(response => {
+            addPlan(this.form).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
@@ -371,42 +428,19 @@ export default {
         }
       });
     },
-    /** 删除按钮操作 */
-    handleDelete(row) {
-      const ids = row.id || this.ids;
-      this.$modal.confirm('是否确认删除产品型号编号为"' + ids + '"的数据项？').then(function() {
-        return delModel(ids);
-      }).then(() => {
-        this.getList();
-        this.$modal.msgSuccess("删除成功");
-      }).catch(() => {});
-    },
-    /**
-     * 设置原材料
-     */
-    handleSetting(row){
-      console.log("设置材料");
-    },
-    /** 导出按钮操作 */
-    handleExport() {
-      this.download('system/model/export', {
-        ...this.queryParams
-      }, `model_${new Date().getTime()}.xlsx`)
-    },
     /** 上传 */
     importSubmitForm() {
       this.$refs.upload.submit();
     },
-    importReset(){
-      this.importForm = {
-        fileList: []
-      }
-      this.fileList = [];
-      this.resetForm("importForm");
-    },
-    importCancel(){
-      this.importOpen = false;
-      // this.importReset();
+    /** 删除按钮操作 */
+    handleDelete(row) {
+      const ids = row.id || this.ids;
+      this.$modal.confirm('是否确认删除生产计划编号为"' + ids + '"的数据项？').then(function() {
+        return delPlan(ids);
+      }).then(() => {
+        this.getList();
+        this.$modal.msgSuccess("删除成功");
+      }).catch(() => {});
     },
     // 文件上传中处理
     handleFileUploadProgress(event, file, fileList) {
@@ -420,6 +454,19 @@ export default {
       this.$alert("<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 20px 0;'>" + response.message + "</div>", "导入结果", { dangerouslyUseHTMLString: true });
       this.getList();
     },
+    handleExportShow(){
+      this.exportShow = !this.exportShow;
+    },
+    /** 导出按钮操作 */
+    handleExport() {
+      var date = new Date();
+      var dateString = date.toISOString().substring(0,10).replaceAll("-" , "");
+      console.log("==============" + dateString);
+      this.queryParams.day = dateString;
+      this.download('excelExport/daysPlan', {
+        ...this.queryParams
+      }, `plan_${new Date().getTime()}.xlsx`)
+    }
   }
 };
 </script>

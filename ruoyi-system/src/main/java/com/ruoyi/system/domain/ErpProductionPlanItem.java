@@ -1,8 +1,12 @@
 package com.ruoyi.system.domain;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.ruoyi.system.domain.vo.PlanVo;
 import lombok.Data;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -10,38 +14,42 @@ import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.core.domain.BaseEntity;
 
 /**
- * 商品由 具体原件组成关联对象 erp_bom
+ * 用于保存 每天生产计划所消耗的原材料数对象 erp_production_plan_item
  * 
  * @author ruoyi
- * @date 2023-06-04
+ * @date 2023-10-03
  */
 @Data
-public class ErpBom extends BaseEntity
+public class ErpProductionPlanItem extends BaseEntity
 {
     private static final long serialVersionUID = 1L;
 
     /** $column.columnComment */
     private Long id;
 
-    /** 具体型号商品 id */
-    @Excel(name = "具体型号商品 id")
-    private Long productModelId;
+    /** 产品线（类别）code */
+    @Excel(name = "产品线", readConverterExp = "类=别")
+    private String productLineCode;
 
-    /** 商品编号 冗余字段 */
-    @Excel(name = "商品编号 冗余字段")
-    private String productModelCoder;
+    /** 产品型号code */
+    @Excel(name = "产品型号code")
+    private String productModelCode;
 
-    /** 原材料id */
-    @Excel(name = "原材料id")
-    private Long originalId;
+    /** 产品个数 */
+    @Excel(name = "产品个数")
+    private Long count;
 
-    /** 原材料 coder 冗余字段 */
-    @Excel(name = "原材料 coder 冗余字段")
+    /** 原材料code */
+    @Excel(name = "原材料code")
     private String originalCoder;
 
     /** 用到的个数 */
     @Excel(name = "用到的个数")
     private BigDecimal number;
+
+    /** 用到这个原材料的日期 */
+    @Excel(name = "用到这个原材料的日期")
+    private Long date;
 
     /** 0 非删除 1删除 */
     @Excel(name = "0 非删除 1删除")
@@ -51,12 +59,6 @@ public class ErpBom extends BaseEntity
     @Excel(name = "${comment}", readConverterExp = "$column.readConverterExp()")
     private Date addTime;
 
-    /** $column.columnComment */
-    @Excel(name = "${comment}", readConverterExp = "$column.readConverterExp()")
-    private Long addBy;
 
-    private Integer version;
-
-    private Integer isDefault;
 
 }

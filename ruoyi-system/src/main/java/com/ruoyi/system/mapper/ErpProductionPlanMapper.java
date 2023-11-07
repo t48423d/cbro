@@ -1,7 +1,11 @@
 package com.ruoyi.system.mapper;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Set;
+
 import com.ruoyi.system.domain.ErpProductionPlan;
+import io.lettuce.core.dynamic.annotation.Param;
 
 /**
  * 生产计划Mapper接口
@@ -58,4 +62,8 @@ public interface ErpProductionPlanMapper
      * @return 结果
      */
     public int deleteErpProductionPlanByIds(Long[] ids);
+
+    void saveBatch(List<ErpProductionPlan> list);
+
+    void setDeleteInDate(List<Date> list);
 }

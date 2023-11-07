@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.ErpProductionPlanItemMapper">
+
+    <resultMap type="ErpProductionPlanItem" id="ErpProductionPlanItemResult">
+        <result property="id"    column="id"    />
+        <result property="productLineCode"    column="product_line_code"    />
+        <result property="productModelCode"    column="product_model_code"    />
+        <result property="count"    column="count"    />
+        <result property="originalCoder"    column="original_coder"    />
+        <result property="number"    column="number"    />
+        <result property="date"    column="date"    />
+        <result property="isDelete"    column="is_delete"    />
+        <result property="addTime"    column="add_time"    />
+    </resultMap>
+
+    <sql id="selectErpProductionPlanItemVo">
+        select id, product_line_code, product_model_code, count, original_coder, number, date, is_delete, add_time from erp_production_plan_item
+    </sql>
+
+    <select id="selectErpProductionPlanItemList" parameterType="ErpProductionPlanItem" resultMap="ErpProductionPlanItemResult">
+        <include refid="selectErpProductionPlanItemVo"/>
+        <where>
+            <if test="productLineCode != null  and productLineCode != ''"> and product_line_code = #{productLineCode}</if>
+            <if test="productModelCode != null  and productModelCode != ''"> and product_model_code = #{productModelCode}</if>
+            <if test="count != null "> and count = #{count}</if>
+            <if test="originalCoder != null  and originalCoder != ''"> and original_coder = #{originalCoder}</if>
+            <if test="number != null "> and number = #{number}</if>
+            <if test="date != null "> and date = #{date}</if>
+            <if test="isDelete != null "> and is_delete = #{isDelete}</if>
+            <if test="addTime != null "> and add_time = #{addTime}</if>
+        </where>
+    </select>
+
+    <select id="selectErpProductionPlanItemListGroupByProduct" parameterType="ErpProductionPlanItem" resultMap="ErpProductionPlanItemResult">
+        <include refid="selectErpProductionPlanItemVo"/>
+        <where>
+            <if test="productLineCode != null  and productLineCode != ''"> and product_line_code = #{productLineCode}</if>
+            <if test="productModelCode != null  and productModelCode != ''"> and product_model_code = #{productModelCode}</if>
+            <if test="count != null "> and count = #{count}</if>
+            <if test="originalCoder != null  and originalCoder != ''"> and original_coder = #{originalCoder}</if>
+            <if test="number != null "> and number = #{number}</if>
+            <if test="date != null "> and date = #{date}</if>
+            <if test="isDelete != null "> and is_delete = #{isDelete}</if>
+            <if test="addTime != null "> and add_time = #{addTime}</if>
+        </where>
+        group by product_model_code, date
+    </select>
+
+
+    <select id="selectErpProductionPlanItemById" parameterType="Long" resultMap="ErpProductionPlanItemResult">
+        <include refid="selectErpProductionPlanItemVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertErpProductionPlanItem" parameterType="ErpProductionPlanItem" useGeneratedKeys="true" keyProperty="id">
+        insert into erp_production_plan_item
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="productLineCode != null">product_line_code,</if>
+            <if test="productModelCode != null">product_model_code,</if>
+            <if test="count != null">count,</if>
+            <if test="originalCoder != null">original_coder,</if>
+            <if test="number != null">number,</if>
+            <if test="date != null">date,</if>
+            <if test="isDelete != null">is_delete,</if>
+            <if test="addTime != null">add_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="productLineCode != null">#{productLineCode},</if>
+            <if test="productModelCode != null">#{productModelCode},</if>
+            <if test="count != null">#{count},</if>
+            <if test="originalCoder != null">#{originalCoder},</if>
+            <if test="number != null">#{number},</if>
+            <if test="date != null">#{date},</if>
+            <if test="isDelete != null">#{isDelete},</if>
+            <if test="addTime != null">#{addTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateErpProductionPlanItem" parameterType="ErpProductionPlanItem">
+        update erp_production_plan_item
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="productLineCode != null">product_line_code = #{productLineCode},</if>
+            <if test="productModelCode != null">product_model_code = #{productModelCode},</if>
+            <if test="count != null">count = #{count},</if>
+            <if test="originalCoder != null">original_coder = #{originalCoder},</if>
+            <if test="number != null">number = #{number},</if>
+            <if test="date != null">date = #{date},</if>
+            <if test="isDelete != null">is_delete = #{isDelete},</if>
+            <if test="addTime != null">add_time = #{addTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteErpProductionPlanItemById" parameterType="Long">
+        delete from erp_production_plan_item where id = #{id}
+    </delete>
+
+    <delete id="deleteErpProductionPlanItemByIds" parameterType="String">
+        delete from erp_production_plan_item where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <update id="setDeleteInDate" parameterType="java.util.List">
+        update erp_production_plan_item set is_delete = 1
+        where `date` in
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <insert id="saveBatch" parameterType="java.util.List">
+        insert into erp_production_plan_item
+        (product_line_code, product_model_code, count,
+         original_coder, number, date, is_delete, add_time)
+        values
+        <foreach collection="list" item="item" separator="," >
+            (#{item.productLineCode}, #{item.productModelCode}, #{item.count},
+             #{item.originalCoder}, #{item.number}, #{item.date},
+             #{item.isDelete},  #{item.addTime})
+        </foreach>
+    </insert>
+
+    <select id="oneDayPlan" parameterType="com.ruoyi.system.domain.PlanRequest" resultMap="ErpProductionPlanItemResult">
+
+    </select>
+
+    <select id="daysPlan" parameterType="com.ruoyi.system.domain.PlanRequest" resultMap="ErpProductionPlanItemResult">
+        select SUM(number) as number, original_coder, `date`
+        from erp_production_plan_item
+        where `date` in
+        <foreach collection="days" item="item"  open="(" separator="," close=")" >
+            #{item}
+        </foreach>
+        group by date, original_coder
+    </select>
+</mapper>

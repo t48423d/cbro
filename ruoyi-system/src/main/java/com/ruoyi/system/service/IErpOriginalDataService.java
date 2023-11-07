@@ -58,4 +58,6 @@ public interface IErpOriginalDataService
      * @return 结果
      */
     public int deleteErpOriginalDataById(Long id);
+
+    List<ErpOriginalData> getListByName(String keyword);
 }

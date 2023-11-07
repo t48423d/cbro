@@ -33,7 +33,7 @@ import org.apache.poi.hssf.usermodel.HSSFPictureData;
 import org.apache.poi.hssf.usermodel.HSSFShape;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ooxml.POIXMLDocumentPart;
+//import org.apache.poi.ooxml.POIXMLDocumentPart;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -328,7 +328,7 @@ public class ExcelUtil<T>
         Map<String, PictureData> pictures;
         if (isXSSFWorkbook)
         {
-            pictures = getSheetPictures07((XSSFSheet) sheet, (XSSFWorkbook) wb);
+//            pictures = getSheetPictures07((XSSFSheet) sheet, (XSSFWorkbook) wb);
         }
         else
         {
@@ -463,19 +463,19 @@ public class ExcelUtil<T>
                         {
                             val = dataFormatHandlerAdapter(val, attr);
                         }
-                        else if (ColumnType.IMAGE == attr.cellType() && StringUtils.isNotEmpty(pictures))
-                        {
-                            PictureData image = pictures.get(row.getRowNum() + "_" + entry.getKey());
-                            if (image == null)
-                            {
-                                val = "";
-                            }
-                            else
-                            {
-                                byte[] data = image.getData();
-                                val = FileUtils.writeImportBytes(data);
-                            }
-                        }
+//                        else if (ColumnType.IMAGE == attr.cellType() && StringUtils.isNotEmpty(pictures))
+//                        {
+//                            PictureData image = pictures.get(row.getRowNum() + "_" + entry.getKey());
+//                            if (image == null)
+//                            {
+//                                val = "";
+//                            }
+//                            else
+//                            {
+//                                byte[] data = image.getData();
+//                                val = FileUtils.writeImportBytes(data);
+//                            }
+//                        }
                         ReflectUtils.invokeSetter(entity, propertyName, val);
                     }
                 }
@@ -936,9 +936,9 @@ public class ExcelUtil<T>
             String imagePath = Convert.toStr(value);
             if (StringUtils.isNotEmpty(imagePath))
             {
-                byte[] data = ImageUtils.getImage(imagePath);
-                getDrawingPatriarch(cell.getSheet()).createPicture(anchor,
-                        cell.getSheet().getWorkbook().addPicture(data, getImageType(data)));
+//                byte[] data = ImageUtils.getImage(imagePath);
+//                getDrawingPatriarch(cell.getSheet()).createPicture(anchor,
+//                        cell.getSheet().getWorkbook().addPicture(data, getImageType(data)));
             }
         }
     }
@@ -946,14 +946,14 @@ public class ExcelUtil<T>
     /**
      * 获取画布
      */
-    public static Drawing<?> getDrawingPatriarch(Sheet sheet)
-    {
-        if (sheet.getDrawingPatriarch() == null)
-        {
-            sheet.createDrawingPatriarch();
-        }
-        return sheet.getDrawingPatriarch();
-    }
+//    public static Drawing<?> getDrawingPatriarch(Sheet sheet)
+//    {
+//        if (sheet.getDrawingPatriarch() == null)
+//        {
+//            sheet.createDrawingPatriarch();
+//        }
+//        return sheet.getDrawingPatriarch();
+//    }
 
     /**
      * 获取图片类型,设置图片插入类型
@@ -1519,49 +1519,49 @@ public class ExcelUtil<T>
             return row;
         }
         Object val = "";
-        try
-        {
-            Cell cell = row.getCell(column);
-            if (StringUtils.isNotNull(cell))
-            {
-                if (cell.getCellType() == CellType.NUMERIC || cell.getCellType() == CellType.FORMULA)
-                {
-                    val = cell.getNumericCellValue();
-                    if (DateUtil.isCellDateFormatted(cell))
-                    {
-                        val = DateUtil.getJavaDate((Double) val); // POI Excel 日期格式转换
-                    }
-                    else
-                    {
-                        if ((Double) val % 1 != 0)
-                        {
-                            val = new BigDecimal(val.toString());
-                        }
-                        else
-                        {
-                            val = new DecimalFormat("0").format(val);
-                        }
-                    }
-                }
-                else if (cell.getCellType() == CellType.STRING)
-                {
-                    val = cell.getStringCellValue();
-                }
-                else if (cell.getCellType() == CellType.BOOLEAN)
-                {
-                    val = cell.getBooleanCellValue();
-                }
-                else if (cell.getCellType() == CellType.ERROR)
-                {
-                    val = cell.getErrorCellValue();
-                }
-
-            }
-        }
-        catch (Exception e)
-        {
-            return val;
-        }
+//        try
+//        {
+//            Cell cell = row.getCell(column);
+//            if (StringUtils.isNotNull(cell))
+//            {
+//                if (cell.getCellType() == CellType.NUMERIC || cell.getCellType() == CellType.FORMULA)
+//                {
+//                    val = cell.getNumericCellValue();
+//                    if (DateUtil.isCellDateFormatted(cell))
+//                    {
+//                        val = DateUtil.getJavaDate((Double) val); // POI Excel 日期格式转换
+//                    }
+//                    else
+//                    {
+//                        if ((Double) val % 1 != 0)
+//                        {
+//                            val = new BigDecimal(val.toString());
+//                        }
+//                        else
+//                        {
+//                            val = new DecimalFormat("0").format(val);
+//                        }
+//                    }
+//                }
+//                else if (cell.getCellType() == CellType.STRING)
+//                {
+//                    val = cell.getStringCellValue();
+//                }
+//                else if (cell.getCellType() == CellType.BOOLEAN)
+//                {
+//                    val = cell.getBooleanCellValue();
+//                }
+//                else if (cell.getCellType() == CellType.ERROR)
+//                {
+//                    val = cell.getErrorCellValue();
+//                }
+//
+//            }
+//        }
+//        catch (Exception e)
+//        {
+//            return val;
+//        }
         return val;
     }
 
@@ -1580,10 +1580,10 @@ public class ExcelUtil<T>
         for (int i = row.getFirstCellNum(); i < row.getLastCellNum(); i++)
         {
             Cell cell = row.getCell(i);
-            if (cell != null && cell.getCellType() != CellType.BLANK)
-            {
-                return false;
-            }
+//            if (cell != null && cell.getCellType() != CellType.BLANK)
+//            {
+//                return false;
+//            }
         }
         return true;
     }
@@ -1628,30 +1628,30 @@ public class ExcelUtil<T>
      * @param workbook 工作簿对象
      * @return Map key:图片单元格索引（1_1）String，value:图片流PictureData
      */
-    public static Map<String, PictureData> getSheetPictures07(XSSFSheet sheet, XSSFWorkbook workbook)
-    {
-        Map<String, PictureData> sheetIndexPicMap = new HashMap<String, PictureData>();
-        for (POIXMLDocumentPart dr : sheet.getRelations())
-        {
-            if (dr instanceof XSSFDrawing)
-            {
-                XSSFDrawing drawing = (XSSFDrawing) dr;
-                List<XSSFShape> shapes = drawing.getShapes();
-                for (XSSFShape shape : shapes)
-                {
-                    if (shape instanceof XSSFPicture)
-                    {
-                        XSSFPicture pic = (XSSFPicture) shape;
-                        XSSFClientAnchor anchor = pic.getPreferredSize();
-                        CTMarker ctMarker = anchor.getFrom();
-                        String picIndex = ctMarker.getRow() + "_" + ctMarker.getCol();
-                        sheetIndexPicMap.put(picIndex, pic.getPictureData());
-                    }
-                }
-            }
-        }
-        return sheetIndexPicMap;
-    }
+//    public static Map<String, PictureData> getSheetPictures07(XSSFSheet sheet, XSSFWorkbook workbook)
+//    {
+//        Map<String, PictureData> sheetIndexPicMap = new HashMap<String, PictureData>();
+//        for (POIXMLDocumentPart dr : sheet.getRelations())
+//        {
+//            if (dr instanceof XSSFDrawing)
+//            {
+//                XSSFDrawing drawing = (XSSFDrawing) dr;
+//                List<XSSFShape> shapes = drawing.getShapes();
+//                for (XSSFShape shape : shapes)
+//                {
+//                    if (shape instanceof XSSFPicture)
+//                    {
+//                        XSSFPicture pic = (XSSFPicture) shape;
+//                        XSSFClientAnchor anchor = pic.getPreferredSize();
+//                        CTMarker ctMarker = anchor.getFrom();
+//                        String picIndex = ctMarker.getRow() + "_" + ctMarker.getCol();
+//                        sheetIndexPicMap.put(picIndex, pic.getPictureData());
+//                    }
+//                }
+//            }
+//        }
+//        return sheetIndexPicMap;
+//    }
 
     /**
      * 格式化不同类型的日期对象

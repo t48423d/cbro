@@ -6,8 +6,8 @@
 
     <resultMap type="ErpProductionPlan" id="ErpProductionPlanResult">
         <result property="id"    column="id"    />
-        <result property="productLineId"    column="product_line_id"    />
-        <result property="productModelId"    column="product_model_id"    />
+        <result property="productLineCode"    column="product_line_code"    />
+        <result property="productModelCode"    column="product_model_code"    />
         <result property="count"    column="count"    />
         <result property="date"    column="date"    />
         <result property="status"    column="status"    />
@@ -19,21 +19,28 @@
     </resultMap>
 
     <sql id="selectErpProductionPlanVo">
-        select id, product_line_id, product_model_id, count, date, status, is_delete, add_time, add_by, update_time, update_by from erp_production_plan
+        select id, product_line_code, product_model_code, count, date, status, is_delete, add_time, add_by, update_time, update_by from erp_production_plan
     </sql>
 
     <select id="selectErpProductionPlanList" parameterType="ErpProductionPlan" resultMap="ErpProductionPlanResult">
         <include refid="selectErpProductionPlanVo"/>
         <where>
-            <if test="productLineId != null "> and product_line_id = #{productLineId}</if>
-            <if test="productModelId != null "> and product_model_id = #{productModelId}</if>
+            <if test="productLineCode != null "> and product_line_code = #{productLineCode}</if>
+            <if test="productModelCode != null "> and product_model_code = #{productModelCode}</if>
             <if test="count != null "> and count = #{count}</if>
             <if test="date != null "> and date = #{date}</if>
             <if test="status != null "> and status = #{status}</if>
             <if test="isDelete != null "> and is_delete = #{isDelete}</if>
             <if test="addTime != null "> and add_time = #{addTime}</if>
             <if test="addBy != null "> and add_by = #{addBy}</if>
+            <if test="params.beginTime != null and params.beginTime != ''"><!-- 开始时间检索 -->
+                AND date_format(date,'%y%m%d') &gt;= date_format(#{params.beginTime},'%y%m%d')
+            </if>
+            <if test="params.endTime != null and params.endTime != ''"><!-- 结束时间检索 -->
+                AND date_format(date,'%y%m%d') &lt;= date_format(#{params.endTime},'%y%m%d')
+            </if>
         </where>
+
     </select>
 
     <select id="selectErpProductionPlanById" parameterType="Long" resultMap="ErpProductionPlanResult">
@@ -44,8 +51,8 @@
     <insert id="insertErpProductionPlan" parameterType="ErpProductionPlan" useGeneratedKeys="true" keyProperty="id">
         insert into erp_production_plan
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="productLineId != null">product_line_id,</if>
-            <if test="productModelId != null">product_model_id,</if>
+            <if test="productLineCode != null">product_line_code,</if>
+            <if test="productModelCode != null">product_model_code,</if>
             <if test="count != null">count,</if>
             <if test="date != null">date,</if>
             <if test="status != null">status,</if>
@@ -56,8 +63,8 @@
             <if test="updateBy != null">update_by,</if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <if test="productLineId != null">#{productLineId},</if>
-            <if test="productModelId != null">#{productModelId},</if>
+            <if test="productLineCode != null">#{productLineCode},</if>
+            <if test="productModelCode != null">#{productModelCode},</if>
             <if test="count != null">#{count},</if>
             <if test="date != null">#{date},</if>
             <if test="status != null">#{status},</if>
@@ -72,8 +79,8 @@
     <update id="updateErpProductionPlan" parameterType="ErpProductionPlan">
         update erp_production_plan
         <trim prefix="SET" suffixOverrides=",">
-            <if test="productLineId != null">product_line_id = #{productLineId},</if>
-            <if test="productModelId != null">product_model_id = #{productModelId},</if>
+            <if test="productLineCode != null">product_line_code = #{productLineCode},</if>
+            <if test="productModelCode != null">product_model_code = #{productModelCode},</if>
             <if test="count != null">count = #{count},</if>
             <if test="date != null">date = #{date},</if>
             <if test="status != null">status = #{status},</if>
@@ -96,4 +103,23 @@
             #{id}
         </foreach>
     </delete>
+
+    <update id="setDeleteInDate"  parameterType="java.util.List">
+        update erp_production_plan set is_delete = 1, update_time = now()
+        where `date` in
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <insert id="saveBatch"  parameterType="java.util.List">
+        insert into erp_production_plan (product_line_code, product_model_code,
+            count, date, status, is_delete, add_time, add_by, update_time, update_by)
+        values
+        <foreach collection="list" item="item" separator="," >
+            (#{item.productLineCode}, #{item.productModelCode}, #{item.count}, #{item.date}, #{item.status},
+             #{item.isDelete}, #{item.addTime}, #{item.addBy}, #{item.updateTime}, #{item.updateBy})
+        </foreach>
+
+    </insert>
 </mapper>

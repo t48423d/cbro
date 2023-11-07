@@ -46,6 +46,10 @@ public class ErpOriginalDataController extends BaseController
         return getDataTable(list);
     }
 
+    public List<ErpOriginalData> getListByName(String keyword){
+        return erpOriginalDataService.getListByName(keyword);
+    }
+
     /**
      * 导出原材料信息列表
      */

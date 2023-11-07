@@ -18,6 +18,7 @@
         <result property="raw"    column="raw"    />
         <result property="rds"    column="rds"    />
         <result property="wip"    column="wip"    />
+        <result property="service"    column="service"    />
         <result property="total"    column="total"    />
         <result property="plannerCode"    column="planner_code"    />
         <result property="isDelete"    column="is_delete"    />
@@ -28,7 +29,9 @@
     </resultMap>
 
     <sql id="selectErpOriginalDataVo">
-        select id, coder, remark, `desc`, suppier, buyer, delivery_site, special, transport, buffer_day, raw, rds, wip, total, planner_code, is_delete, add_time, add_by, update_time, update_bu from erp_original_data
+        select id, coder, remark, `desc`, suppier, buyer, delivery_site, special, transport,
+               buffer_day, raw, rds, wip, service, total, planner_code,
+                is_delete, add_time, add_by, update_time, update_bu from erp_original_data
     </sql>
 
     <select id="selectErpOriginalDataList" parameterType="ErpOriginalData" resultMap="ErpOriginalDataResult">
@@ -46,6 +49,7 @@
             <if test="rds != null "> and rds = #{rds}</if>
             <if test="wip != null  and wip != ''"> and wip = #{wip}</if>
             <if test="total != null "> and total = #{total}</if>
+            <if test="service != null "> and service = #{service}</if>
             <if test="plannerCode != null  and plannerCode != ''"> and planner_code = #{plannerCode}</if>
             <if test="isDelete != null "> and is_delete = #{isDelete}</if>
             <if test="addTime != null "> and add_time = #{addTime}</if>
@@ -58,6 +62,12 @@
         <include refid="selectErpOriginalDataVo"/>
         where id = #{id}
     </select>
+
+    <select id="getListByName" parameterType="String" resultMap="ErpOriginalDataResult">
+        <include refid="selectErpOriginalDataVo"/>
+        where coder like '%${keyword}%'
+    </select>
+
 
     <insert id="insertErpOriginalData" parameterType="ErpOriginalData" useGeneratedKeys="true" keyProperty="id">
         insert into erp_original_data
@@ -74,6 +84,7 @@
             <if test="raw != null">raw,</if>
             <if test="rds != null">rds,</if>
             <if test="wip != null">wip,</if>
+            <if test="service != null">service,</if>
             <if test="total != null">total,</if>
             <if test="plannerCode != null">planner_code,</if>
             <if test="isDelete != null">is_delete,</if>
@@ -95,6 +106,7 @@
             <if test="raw != null">#{raw},</if>
             <if test="rds != null">#{rds},</if>
             <if test="wip != null">#{wip},</if>
+            <if test="service != null">#{service},</if>
             <if test="total != null">#{total},</if>
             <if test="plannerCode != null">#{plannerCode},</if>
             <if test="isDelete != null">#{isDelete},</if>
@@ -120,6 +132,7 @@
             <if test="raw != null">raw = #{raw},</if>
             <if test="rds != null">rds = #{rds},</if>
             <if test="wip != null">wip = #{wip},</if>
+            <if test="service != null">service = #{service},</if>
             <if test="total != null">total = #{total},</if>
             <if test="plannerCode != null">planner_code = #{plannerCode},</if>
             <if test="isDelete != null">is_delete = #{isDelete},</if>
@@ -141,4 +154,70 @@
             #{id}
         </foreach>
     </delete>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into erp_original_data (coder, remark, `desc`, suppier, buyer, delivery_site, special,
+        transport, buffer_day , raw , rds, wip , service, total, planner_code, is_delete, add_time )
+        values
+        <foreach collection="list" item="item" separator="," >
+            (#{item.coder}, #{item.remark}, #{item.desc},#{item.suppier}, #{item.buyer},#{item.deliverySite},
+            #{item.special} , #{item.transport},  #{item.bufferDay}, #{item.raw}, #{item.rds},
+            #{item.wip} , #{item.service} ,#{item.total} ,#{item.plannerCode} , 0, now())
+        </foreach>
+    </insert>
+
+    <update id="updateItem"  parameterType="ErpOriginalData">
+        update
+        `erp_original_data`
+        <set>
+            `remark` = #{remark ,jdbcType=VARCHAR},
+            `desc` = #{desc ,jdbcType=VARCHAR},
+            `suppier` = #{suppier ,jdbcType=VARCHAR},
+            `buyer` = #{buyer ,jdbcType=VARCHAR},
+            `delivery_site` = #{deliverySite ,jdbcType=VARCHAR},
+
+            `special` = #{special},
+            `transport` = #{transport},
+            `buffer_day` = #{bufferDay},
+            `raw` = #{raw},
+            `rds` = #{rds},
+
+            `wip` = #{wip ,jdbcType=VARCHAR},
+            `service` = #{service},
+            `total` = #{total},
+            `planner_code` = #{plannerCode},
+            update_time = now()
+        </set>
+        where
+        `coder` = #{coder}
+    </update>
+
+    <update id="updateBatch" >
+        <foreach collection="list" item="item" separator=";">
+            update
+            `erp_original_data`
+            <set>
+            `remark` = #{item.remark ,jdbcType=VARCHAR},
+            `desc` = #{item.desc ,jdbcType=VARCHAR},
+            `suppier` = #{item.suppier ,jdbcType=VARCHAR},
+            `buyer` = #{item.buyer ,jdbcType=VARCHAR},
+            `delivery_site` = #{item.deliverySite ,jdbcType=VARCHAR},
+
+            `special` = #{item.special},
+            `transport` = #{item.transport},
+            `buffer_day` = #{item.bufferDay},
+            `raw` = #{item.raw},
+            `rds` = #{item.rds},
+
+            `wip` = #{item.wip ,jdbcType=VARCHAR},
+            `service` = #{item.service},
+            `total` = #{item.total},
+            `planner_code` = #{item.plannerCode},
+            update_time = now()
+            </set>
+            where
+            `coder` = #{item.coder}
+
+        </foreach>
+    </update>
 </mapper>

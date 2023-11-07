@@ -58,4 +58,21 @@ public interface ErpBomMapper
      * @return 结果
      */
     public int deleteErpBomByIds(Long[] ids);
+
+    /**
+     * 批量插入组合
+     * @param list
+     * @return
+     */
+    public int batchInsert(List<ErpBom> list);
+
+    void updateBatch(List<ErpBom> erpBoms);
+
+    void changeDelBatch(List<ErpBom> erpBoms);
+
+    void updateItems(ErpBom erpBom);
+
+    void deleteItem(ErpBom erpBom);
+
+    List<ErpBom> getListInModelCodes(List<String> productModelCodes);
 }
